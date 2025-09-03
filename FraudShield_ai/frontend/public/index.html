@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudShield AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1f2937; /* gray-800 */
+            color: #d1d5db; /* gray-300 */
+        }
+        .main-content {
+            height: 100vh;
+            display: flex;
+        }
+        .content-area {
+            overflow-y: auto;
+        }
+        .sidebar-link.active {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            font-weight: 600;
+        }
+        .loader {
+            border: 5px solid #4b5563; /* gray-600 */
+            border-top: 5px solid #3b82f6; /* blue-500 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .myth-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .risk-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        .risk-critical { color: #ef4444; } /* red-500 */
+        .risk-high { color: #f97316; } /* orange-500 */
+        .risk-medium { color: #facc15; } /* yellow-400 */
+        .risk-low { color: #22c55e; } /* green-500 */
+        
+        .dot-critical { background-color: #ef4444; }
+        .dot-high { background-color: #f97316; }
+        .dot-medium { background-color: #facc15; }
+        .dot-low { background-color: #22c55e; }
+
+        /* Landing page styles */
+        #landing-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e40af 0%, #0f172a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+        }
+        .landing-logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .landing-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .landing-subtitle {
+            font-size: 1.2rem;
+            color: #d1d5db;
+            margin-bottom: 3rem;
+            text-align: center;
+            max-width: 600px;
+        }
+        .progress-bar {
+            width: 300px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #3b82f6;
+            border-radius: 3px;
+            animation: fillProgress 3s ease-in-out forwards;
+        }
+        @keyframes fillProgress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landing-page">
+        <svg class="landing-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="45" stroke="#3b82f6" stroke-width="4"/>
+            <path d="M35 40L45 55L65 30" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+            <path d="M30 70H70" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <h1 class="landing-title">FraudShield AI</h1>
+        <p class="landing-subtitle">Protecting investors from market manipulation with advanced AI detection</p>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-gray-900 text-gray-300 flex flex-col flex-shrink-0">
+            <div class="h-20 flex items-center justify-center border-b border-gray-700">
+                <h1 class="text-2xl font-bold text-white">FraudShield AI</h1>
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <a href="#" id="nav-dashboard" class="sidebar-link active flex items-center px-4 py-2.5 rounded-lg transition duration-200 hover:bg-gray-700">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+                    Dashboard
+                </a>
+                <a href="#" id="nav-verify" class="sidebar-link flex items-center px-4 py-2.5 rounded-lg transition duration-200 hover:bg-gray-700">
+                     <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Verification
+                </a>
+                <a href="#" id="nav-mythbuster" class="sidebar-link flex items-center px-4 py-2.5 rounded-lg transition duration-200 hover:bg-gray-700">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Myth Buster
+                </a>
+            </nav>
+            <div class="p-4 border-t border-gray-700">
+                <p class="text-sm text-gray-400">SEBI Hackathon Project</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 content-area p-8">
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="page-content">
+                 <header class="mb-8">
+                    <h2 class="text-3xl font-bold text-white">Real-time Feed</h2>
+                    <p class="mt-1 text-gray-400">Aggregated news and announcements, automatically flagged for risk.</p>
+                </header>
+                <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-lg">
+                    <div id="feed-container" class="space-y-4">
+                        <!-- Feed items will be injected here from the mock data -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verification Page -->
+            <div id="page-verify" class="page-content hidden">
+                <header class="mb-8">
+                    <h2 class="text-3xl font-bold text-white">Verification Tool</h2>
+                    <p class="mt-1 text-gray-400">Analyze announcements, news, and media files for potential signs of fraud.</p>
+                </header>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold text-white mb-4">Submit for Analysis</h3>
+                        <form id="verification-form">
+                            <textarea id="text-input" class="w-full h-40 p-3 bg-gray-700 border border-gray-600 text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Paste news article, announcement text, or a social media post..."></textarea>
+                            <div class="mt-4">
+                                <label for="file-upload" class="w-full inline-block text-center bg-blue-600 bg-opacity-20 hover:bg-opacity-30 text-blue-300 font-semibold py-3 px-4 rounded-lg cursor-pointer transition">
+                                    <span id="file-name">Or Upload Video/Audio File</span>
+                                </label>
+                                <input id="file-upload" type="file" class="hidden"/>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg mt-6 transition disabled:bg-gray-500">Verify</button>
+                        </form>
+                    </div>
+                    <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-lg">
+                         <h3 class="text-xl font-bold text-white mb-4">Analysis Result</h3>
+                         <div id="result-container">
+                            <div class="text-gray-500 text-center py-10">Results will be displayed here.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Myth Buster Page -->
+            <div id="page-mythbuster" class="page-content hidden">
+                <header class="mb-8">
+                    <h2 class="text-3xl font-bold text-white">Financial Myth Buster</h2>
+                    <p class="mt-1 text-gray-400">Debunking common misconceptions in the financial world.</p>
+                </header>
+                <div class="space-y-4" id="myth-container">
+                    <!-- Myths will be dynamically inserted here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- LANDING PAGE TRANSITION ---
+        const landingPage = document.getElementById('landing-page');
+        
+        // Function to hide landing page with animation
+        function hideLandingPage() {
+            landingPage.style.opacity = '0';
+            setTimeout(() => {
+                landingPage.style.display = 'none';
+            }, 1000);
+        }
+        
+        // Automatically transition after 3 seconds (progress bar duration)
+        setTimeout(hideLandingPage, 3000);
+        
+        // Also allow users to click to skip the wait
+        landingPage.addEventListener('click', hideLandingPage);
+
+        // --- PAGE NAVIGATION LOGIC ---
+        const navLinks = {
+            dashboard: document.getElementById('nav-dashboard'),
+            verify: document.getElementById('nav-verify'),
+            mythbuster: document.getElementById('nav-mythbuster')
+        };
+        const pages = {
+            dashboard: document.getElementById('page-dashboard'),
+            verify: document.getElementById('page-verify'),
+            mythbuster: document.getElementById('page-mythbuster')
+        };
+
+        function switchPage(pageKey) {
+            Object.values(pages).forEach(page => page.classList.add('hidden'));
+            Object.values(navLinks).forEach(link => link.classList.remove('active'));
+            pages[pageKey].classList.remove('hidden');
+            navLinks[pageKey].classList.add('active');
+        }
+
+        navLinks.dashboard.addEventListener('click', (e) => { e.preventDefault(); switchPage('dashboard'); });
+        navLinks.verify.addEventListener('click', (e) => { e.preventDefault(); switchPage('verify'); });
+        navLinks.mythbuster.addEventListener('click', (e) => { e.preventDefault(); switchPage('mythbuster'); });
+
+        // --- VERIFICATION FORM LOGIC (SIMULATED) ---
+        const form = document.getElementById('verification-form');
+        const textInput = document.getElementById('text-input');
+        const fileInput = document.getElementById('file-upload');
+        const fileNameSpan = document.getElementById('file-name');
+        const resultContainer = document.getElementById('result-container');
+        const submitButton = form.querySelector('button');
+
+        fileInput.addEventListener('change', () => {
+            fileNameSpan.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : 'Or Upload Video/Audio File';
+        });
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const text = textInput.value;
+            const file = fileInput.files[0];
+            if (!text && !file) {
+                alert('Please provide either text or a file.');
+                return;
+            }
+            submitButton.disabled = true;
+            submitButton.textContent = 'Analyzing...';
+            resultContainer.innerHTML = `<div class="loader"></div>`;
+            
+            // Simulate a network delay
+            setTimeout(() => {
+                const simulatedResult = generateSimulatedResult(text, file);
+                renderResult(simulatedResult);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Verify';
+            }, 2000);
+        });
+
+        function generateSimulatedResult(text, file) {
+            let deepfake_analysis = null;
+            let text_analysis = null;
+            let cross_verification = { flags: [] };
+            let overall_risk_score = 0;
+            let risk_level = 'Low';
+
+            if (file) {
+                const is_deepfake = Math.random() > 0.6; // Higher chance of not being a deepfake
+                const confidence = is_deepfake ? (Math.random() * (0.98 - 0.75) + 0.75) : (Math.random() * (0.20 - 0.05) + 0.05);
+                deepfake_analysis = { is_deepfake, confidence: confidence.toFixed(2) };
+                if (is_deepfake) overall_risk_score += 60;
+            }
+
+            if (text) {
+                const flags = [];
+                const textLower = text.toLowerCase();
+                if (textLower.includes('guaranteed profit') || textLower.includes('risk-free')) flags.push('Promissory Language');
+                if (textLower.includes('urgent') || textLower.includes('act now')) flags.push('Urgency Pressure');
+                if (textLower.includes('insider tip')) flags.push('Insider Claim');
+                if (textLower.includes('500%')) flags.push('Extraordinary Claim');
+                text_analysis = { flags };
+                overall_risk_score += flags.length * 15;
+
+                if (textLower.includes('innovate corp') && textLower.includes('500%')) {
+                    cross_verification.flags.push("Claim Mismatch: No official filing supports a 500% growth claim.");
+                }
+                if (flags.includes('Insider Claim')) {
+                    cross_verification.flags.push("Source Unverifiable: 'Insider' claims are not public data.");
+                }
+                overall_risk_score += cross_verification.flags.length * 20;
+            }
+            
+            overall_risk_score = Math.min(Math.round(overall_risk_score), 100);
+
+            if (overall_risk_score > 75) risk_level = 'Critical';
+            else if (overall_risk_score > 50) risk_level = 'High';
+            else if (overall_risk_score > 25) risk_level = 'Medium';
+
+            return {
+                overall_risk_score,
+                risk_level,
+                analysis_details: { deepfake_analysis, text_analysis, cross_verification }
+            };
+        }
+
+        function renderResult(result) {
+            const riskColorClass = `risk-${result.risk_level.toLowerCase()}`;
+            let html = `<div class="text-left space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold ${riskColorClass}">${result.risk_level} Risk</h3>
+                    <div class="text-3xl font-bold text-white">${result.overall_risk_score}</div>
+                </div>`;
+            if (result.analysis_details.text_analysis && result.analysis_details.text_analysis.flags.length > 0) {
+                html += `<div><h4 class="text-lg font-semibold text-blue-400 mb-2">Text Analysis Flags</h4><div class="flex flex-wrap gap-2">${result.analysis_details.text_analysis.flags.map(flag => `<span class="bg-gray-700 text-red-400 text-sm font-semibold px-2.5 py-1 rounded-full">${flag}</span>`).join('')}</div></div>`;
+            }
+            if (result.analysis_details.deepfake_analysis) {
+                 html += `<div><h4 class="text-lg font-semibold text-blue-400 mb-2">Media Analysis</h4><p><strong>Deepfake Detected:</strong> <span class="font-bold ${result.analysis_details.deepfake_analysis.is_deepfake ? 'text-red-400' : 'text-green-400'}">${result.analysis_details.deepfake_analysis.is_deepfake ? 'Yes' : 'No'} (Confidence: ${result.analysis_details.deepfake_analysis.confidence})</span></p></div>`;
+            }
+            if (result.analysis_details.cross_verification.flags.length > 0) {
+                 html += `<div><h4 class="text-lg font-semibold text-blue-400 mb-2">Cross-Verification</h4><ul class="list-disc list-inside text-red-400 font-semibold">${result.analysis_details.cross_verification.flags.map(flag => `<li>${flag}</li>`).join('')}</ul></div>`;
+            }
+            html += `</div>`;
+            resultContainer.innerHTML = html;
+        }
+
+        // --- MYTH BUSTER LOGIC ---
+        const myths = [
+            { myth: "You need a lot of money to start investing.", reality: "This is a common misconception. Today, you can start investing with very small amounts through Systematic Investment Plans (SIPs) in mutual funds, or by buying fractional shares of expensive stocks. The key is to start early, not to start big." },
+            { myth: "'Guaranteed' high returns are a real opportunity.", reality: "In legitimate finance, risk and return are always linked. Any scheme that promises unusually high 'guaranteed' returns is almost certainly a scam. Official investments like government bonds offer guarantees, but with much lower returns." },
+            { myth: "Insider tips from social media are valuable.", reality: "Be extremely cautious. This is often part of a 'pump and dump' scheme where fraudsters hype a stock to inflate its price and then sell their shares, causing it to crash. Always do your own research (DYOR) from credible sources." },
+            { myth: "It's best to wait for the 'perfect' time to enter the market.", reality: "Timing the market is nearly impossible, even for professionals. A more effective strategy is 'time in the market.' Regular, consistent investing over a long period (dollar-cost averaging) is generally more successful than trying to predict market peaks and troughs." },
+        ];
+        const mythContainer = document.getElementById('myth-container');
+        myths.forEach(item => {
+            const mythEl = document.createElement('div');
+            mythEl.className = 'bg-gray-800 border border-gray-700 rounded-lg shadow-md';
+            mythEl.innerHTML = `
+                <button class="w-full text-left p-4 font-semibold text-lg text-white flex justify-between items-center">
+                    <span>${item.myth}</span>
+                    <svg class="w-5 h-5 transition-transform transform text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="myth-content px-4">
+                    <p class="py-4 border-t border-gray-700 text-gray-300">${item.reality}</p>
+                </div>`;
+            mythContainer.appendChild(mythEl);
+        });
+        mythContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('button');
+            if (!button) return;
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('svg');
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.style.transform = 'rotate(180deg)';
+            }
+        });
+
+        // --- DASHBOARD FEED LOGIC (SIMULATED) ---
+        const feedContainer = document.getElementById('feed-container');
+        const mockFeedData = [
+            { "source": "Telegram Group", "title": "URGENT INSIDER TIP: 'FutureTech Ltd' is about to announce a major breakthrough. Stock will TRIPLE by Friday. Don't miss out! #getrichquick", "risk_level": "High" },
+            { "source": "BSE India", "title": "FutureTech Ltd files patent for new energy-efficient semiconductor design.", "risk_level": "Low" },
+            { "source": "NewsAPI.org", "title": "Market analysts predict steady growth in the tech sector for the next quarter.", "risk_level": "Low" },
+            { "source": "X (Twitter)", "title": "Why is nobody talking about 'Innovate Corp'? Just heard from a friend they have a new risk-free bond offering. Almost too good to be true!", "risk_level": "Medium" },
+            { "source": "SEBI", "title": "SEBI issues advisory against investing in unregulated digital asset schemes.", "risk_level": "Low" },
+            { "source": "YouTube Comment", "title": "Forget fundamentals, the chart for 'FutureTech Ltd' is screaming buy. We're taking this to the moon! 🚀🚀🚀", "risk_level": "Medium" }
+        ];
+        
+        function loadDashboardFeed() {
+            feedContainer.innerHTML = ''; // Clear loader
+            mockFeedData.forEach(item => {
+                const riskColorClass = `risk-${item.risk_level.toLowerCase()}`;
+                const dotColorClass = `dot-${item.risk_level.toLowerCase()}`;
+                const feedEl = document.createElement('div');
+                feedEl.className = 'p-4 bg-gray-900 border border-gray-700 rounded-lg flex items-start';
+                feedEl.innerHTML = `
+                    <div class="mr-4 flex-shrink-0 pt-1"><div class="risk-dot ${dotColorClass}"></div></div>
+                    <div class="flex-grow">
+                        <p class="font-semibold text-white">${item.title}</p>
+                        <div class="text-sm text-gray-400 mt-1 flex justify-between items-center w-full">
+                            <span>Source: ${item.source}</span>
+                            <span class="font-semibold ${riskColorClass}">${item.risk_level} Risk</span>
+                        </div>
+                    </div>`;
+                feedContainer.appendChild(feedEl);
+            });
+        }
+        
+        // Load the dashboard feed when the page first loads
+        window.addEventListener('load', loadDashboardFeed);
+
+    </script>
+</body>
+</html>
