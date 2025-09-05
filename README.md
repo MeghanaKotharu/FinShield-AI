@@ -122,6 +122,9 @@ VITE_API_BASE=http://localhost:8000/api
 - [ ] Deploy demo (Render + Netlify/Vercel)  
 
 ---
+## 🔗 [View User Workflow](https://claude.site/public/artifacts/58f59450-c1f0-47cb-a5ec-45d9210056c8/embed)
+---
+
 
 ## 🤝 Contributing  
 We welcome contributions!  
