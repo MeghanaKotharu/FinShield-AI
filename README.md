@@ -1,4 +1,4 @@
-# sebi-submission
+
 # 🛡️ FraudShield  
 AI-powered system to detect, analyze, and combat misinformation & fraud across text, images, and video.
 
